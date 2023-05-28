@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 class OraclePollingConfigTest {
 
     @Test
-    public void shouldCreateConfig() {
-        var expectedConfig = OraclePollingConfig.configPollingDefintion();
+    void shouldCreateConfig() {
+        var expectedConfig = OraclePollingConfig.configPollingDefinition();
 
         Assertions.assertThat(expectedConfig).isNotNull();
         Assertions.assertThat(expectedConfig.configKeys().keySet()).contains(PropertiesPollingConig.DATASOURCE_URL).contains(PropertiesPollingConig.OUTBOX_TABLE_LIST);

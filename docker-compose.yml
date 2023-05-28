@@ -1,0 +1,26 @@
+version: "3"
+services:
+  zookeeper:
+    build: .
+    entrypoint: ./bin/zookeeper-server-start.sh ./config/zookeeper.properties
+    expose: 
+       - 2181
+    ports:
+       - 2181:2181
+  kafka:
+    build: .
+    entrypoint: ./bin/kafka-server-start.sh ./config/server.properties
+    expose: 
+       - 9092
+    ports:
+       - 9092:9092
+    depends_on: 
+       - zookeeper
+  connect:
+    build: .
+    entrypoint: ./bin/connect-standalone.sh /opt/connect/config/connect-jambo-outbox.properties
+    volumes:
+        - ./target:/opt/connect/lib
+        - ./config:/opt/connect/config
+    depends_on:
+       - kafka

@@ -40,7 +40,7 @@ public class OutboxPollingConnector extends SourceConnector {
 
     @Override
     public ConfigDef config() {
-        return oraclePollingConfig.configPollingDefintion();
+        return oraclePollingConfig.configPollingDefinition();
     }
 
 

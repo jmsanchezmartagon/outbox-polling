@@ -9,14 +9,14 @@ import java.util.Map;
 class OutboxReaderTest {
 
     @Test
-    public void shouldGetStartTask() {
+    void shouldGetStartTask() {
         var reader = new OutboxReader();
         reader.start(createConfigMap());
     }
 
 
     @Test
-    public void shouldGetConnection() {
+    void shouldGetConnection() {
         var reader = new OutboxReader();
         reader.start(createConfigMap());
     }
