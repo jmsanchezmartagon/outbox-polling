@@ -24,7 +24,7 @@ class OutboxReaderTest {
 
     private Map<String, String> createConfigMap() {
         return new HashMap<String, String>() {{
-            put(PropertiesPollingConig.DATASOURCE_URL, "jdbc:oracle:thin:TEST_IRIS_CUSTOMER/TEST_IRIS_CUSTOMER@localhost:1521:XE");
+            put(PropertiesPollingConig.DATASOURCE_URL, "jdbc:oracle:thin:JAMBO/JAMBO@localhost:1521/ORCLPDB1");
             put(PropertiesPollingConig.OUTBOX_TABLE_LIST, "one");
         }};
     }

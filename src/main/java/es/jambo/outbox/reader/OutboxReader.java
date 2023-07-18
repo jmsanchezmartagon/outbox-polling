@@ -7,10 +7,7 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.apache.kafka.connect.source.SourceTaskContext;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,6 +19,8 @@ public class OutboxReader extends SourceTask {
     private Connection connection;
     private String[] listOutbox;
     private Map<String, OffsetRecord> offsetPartition;
+
+    private boolean flag = false;
 
     public void initialize(SourceTaskContext context) {
         this.context = context;
@@ -42,6 +41,7 @@ public class OutboxReader extends SourceTask {
 
 
     private String[] getListOutbox(Map<String, String> map) {
+        System.out.println(map.toString());
         String tables = map.get(PropertiesPollingConig.OUTBOX_TABLE_LIST);
         if (tables == null || tables.isBlank()) {
             throw new IllegalArgumentException();
@@ -69,6 +69,7 @@ public class OutboxReader extends SourceTask {
         for (var tableName : listOutbox) {
             var offsetMap = this.context.offsetStorageReader().offset(Collections.singletonMap(RecordFields.OFFSET, tableName));
             if (offsetMap != null) {
+                System.out.println(String.format(" offset: %s",offsetMap.toString()));
                 var value = offsetMap.get(RecordFields.OFFSET);
                 if (value instanceof OffsetRecord offsetValue) {
                     offsetPartition.put(tableName, offsetValue);
@@ -82,54 +83,76 @@ public class OutboxReader extends SourceTask {
     public List<SourceRecord> poll() throws InterruptedException {
         List<SourceRecord> list = new LinkedList<>();
         OffsetRecord offsetValue = null;
-        for (var tableName : listOutbox) {
-            offsetValue = offsetPartition.get(tableName);
 
-            try {
+        if (!flag) {
+            flag = true;
 
 
-                System.out.println((offsetValue == null) ?
-                        String.format("""
-                                select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
-                                from %s o
-                                """, tableName)
-                        :
-                        String.format("""
-                                select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
-                                from %s o
-                                where create_at >= ?
-                                      and row_scn > ?                
-                                                """, tableName));
-                if (offsetValue != null) {
-                    System.out.println(offsetValue.date());
-                    System.out.println(offsetValue.scn());
+            for (var tableName : listOutbox) {
+                offsetValue = offsetPartition.get(tableName);
+
+                PreparedStatement stment = null;
+                ResultSet resultSet = null;
+                try {
+
+
+                    System.out.println((offsetValue == null) ?
+                            String.format("""
+                                    select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
+                                    from %s o
+                                    """, tableName)
+                            :
+                            String.format("""
+                                    select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
+                                    from %s o
+                                    where create_at >= ?
+                                          and row_scn > ?                
+                                                    """, tableName));
+                    if (offsetValue != null) {
+                        System.out.println(offsetValue.date());
+                        System.out.println(offsetValue.scn());
+                    }
+                    stment = connection.prepareStatement(
+                            (offsetValue == null) ?
+                                    String.format("""
+                                            select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
+                                            from %s o
+                                            """, tableName)
+                                    :
+                                    String.format("""
+                                            select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
+                                            from %s o
+                                            where create_at >= ?
+                                                  and row_scn > ?                
+                                                            """, tableName));
+                    if (offsetValue != null) {
+                        stment.setDate(0, new java.sql.Date(offsetValue.date()));
+                        stment.setString(1, offsetValue.scn());
+                    }
+                    resultSet = stment.executeQuery();
+
+                    while (resultSet.next()) {
+                        System.out.println("reading...");
+                        list.add(RowMapper.GET.record(tableName, resultSet));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new InterruptedException(ex.getMessage());
+                } finally {
+                    try {
+                        if (resultSet != null)
+                            resultSet.close();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    try {
+                        if (stment != null)
+                            stment.close();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
-                PreparedStatement stment = connection.prepareStatement(
-                        (offsetValue == null) ?
-                                String.format("""
-                                        select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
-                                        from %s o
-                                        """, tableName)
-                                :
-                                String.format("""
-                                        select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
-                                        from %s o
-                                        where create_at >= ?
-                                              and row_scn > ?                
-                                                        """, tableName));
-                if (offsetValue != null) {
-                    stment.setDate(0, new java.sql.Date(offsetValue.date()));
-                    stment.setString(1, offsetValue.scn());
-                }
-                var resultSet = stment.executeQuery();
 
-                while (resultSet.next()) {
-                    System.out.println("reading...");
-                    list.add(RowMapper.GET.record(tableName, resultSet));
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new InterruptedException(ex.getMessage());
             }
         }
         return list;
