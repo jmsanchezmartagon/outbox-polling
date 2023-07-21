@@ -35,16 +35,10 @@ enum RowMapper {
         return Collections.singletonMap(RecordFields.PARTITION, partitionId);
     }
 
-    private Map<String, OffsetRecord> getOffSet(ResultSet resultSet) throws SQLException {
+    private Map<String, String> getOffSet(ResultSet resultSet) throws SQLException {
         final var lastSCN = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
         final var lastDate = resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime();
-        return Collections.singletonMap(RecordFields.OFFSET, new OffsetRecord(lastDate, lastSCN));
-        /*
-        return new HashMap<>() {{
-            put(RecordFields.Offset.TIME, lastDate);
-            put(RecordFields.Offset.SCN, lastSCN);
-        }};
-         */
+        return Collections.singletonMap(RecordFields.OFFSET, new OffsetRecord(lastDate, lastSCN).serialize());
     }
 
 }
