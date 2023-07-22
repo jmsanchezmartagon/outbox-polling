@@ -71,10 +71,12 @@ class OutboxPollingConnectorTest {
     @Test
     void should_getTowConfigWithTwoParams_when_maxTaksIsMinorThanConfig() {
         //given
+        final var POOL_INTERVAL = "500";
         final var outboxTables = String.format("1%s2%s3%s4", PropertiesPollingConig.OUTBOX_LIST_TOKEN, PropertiesPollingConig.OUTBOX_LIST_TOKEN, PropertiesPollingConig.OUTBOX_LIST_TOKEN);
         final var configMap = new HashMap<String, String>() {{
             put(PropertiesPollingConig.DATASOURCE_URL, "");
             put(PropertiesPollingConig.OUTBOX_TABLE_LIST, outboxTables);
+            put(PropertiesPollingConig.POOL_INTERVAL_MS, POOL_INTERVAL);
         }};
         final var polling = new OutboxPollingConnector();
 
@@ -86,7 +88,9 @@ class OutboxPollingConnectorTest {
         // then
         Assertions.assertThat(resultConfig).isNotEmpty().size().isEqualTo(2);
         Assertions.assertThat(resultConfig.get(0).get(PropertiesPollingConig.OUTBOX_TABLE_LIST)).isEqualTo(String.format("1%s3", PropertiesPollingConig.OUTBOX_LIST_TOKEN));
+        Assertions.assertThat(resultConfig.get(0).get(PropertiesPollingConig.POOL_INTERVAL_MS)).isEqualTo(POOL_INTERVAL);
         Assertions.assertThat(resultConfig.get(1).get(PropertiesPollingConig.OUTBOX_TABLE_LIST)).isEqualTo(String.format("2%s4", PropertiesPollingConig.OUTBOX_LIST_TOKEN));
+        Assertions.assertThat(resultConfig.get(1).get(PropertiesPollingConig.POOL_INTERVAL_MS)).isEqualTo(POOL_INTERVAL);
     }
 
     @Test
@@ -116,5 +120,6 @@ class OutboxPollingConnectorTest {
         final var config = new OutboxPollingConnector().config();
 
         Assertions.assertThat(config).isNotNull();
+
     }
 }

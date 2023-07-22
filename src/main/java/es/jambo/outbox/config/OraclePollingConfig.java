@@ -17,7 +17,8 @@ public final class OraclePollingConfig extends AbstractConfig {
     public static ConfigDef configPollingDefinition() {
         if (configDef == null) {
             configDef = new ConfigDef().define(PropertiesPollingConig.DATASOURCE_URL, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "Configuration for jdbc connection")
-                    .define(PropertiesPollingConig.OUTBOX_TABLE_LIST, ConfigDef.Type.LIST, ConfigDef.Importance.HIGH, "List at the tables to do polling. schema.table_name");
+                    .define(PropertiesPollingConig.OUTBOX_TABLE_LIST, ConfigDef.Type.LIST, ConfigDef.Importance.HIGH, "List at the tables to do polling. schema.table_name")
+                    .define(PropertiesPollingConig.POOL_INTERVAL_MS, ConfigDef.Type.INT, ConfigDef.Importance.HIGH, "Set pool interval in milliseconds");
         }
         return configDef;
     }

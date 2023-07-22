@@ -80,6 +80,7 @@ public class OutboxPollingConnector extends SourceConnector {
         return Arrays.stream(threadsTables).map(outboxByThread -> {
             Map<String, String> config = new HashMap<>();
             config.put(PropertiesPollingConig.DATASOURCE_URL, oraclePollingConfig.getString(PropertiesPollingConig.DATASOURCE_URL));
+            config.put(PropertiesPollingConig.POOL_INTERVAL_MS, String.valueOf(oraclePollingConfig.getInt(PropertiesPollingConig.POOL_INTERVAL_MS)));
             config.put(PropertiesPollingConig.OUTBOX_TABLE_LIST, outboxByThread.stream()
                     .reduce((partialString, element) -> String.format("%s%s%s", partialString, PropertiesPollingConig.OUTBOX_LIST_TOKEN, element)).orElse(""));
             return Collections.unmodifiableMap(config);
