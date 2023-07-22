@@ -3,6 +3,9 @@ package es.jambo.outbox.reader;
 import org.apache.kafka.connect.header.ConnectHeaders;
 import org.apache.kafka.connect.header.Headers;
 import org.apache.kafka.connect.source.SourceRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,19 +15,18 @@ import java.util.Map;
 enum RowMapper {
     GET;
 
-    public SourceRecord record(String partitionId, ResultSet resultSet) throws SQLException {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RowMapper.class);
+    public SourceRecord sourceRecord(String partitionId, ResultSet resultSet) throws SQLException {
 
         final var headers = getHeaders(resultSet);
         final var sourcePartition = getSource(partitionId);
         final var sourceOffset = getOffSet(resultSet);
-/*
-        return new SourceRecord(sourcePartition, sourceOffset, resultSet.getString(OutboxColumns.EVENT_TYPE.name()),
-                null, resultSet.getString(OutboxColumns.DATA.name()));
-        */
-        System.out.println("RECORDs" + resultSet.getString(OutboxColumns.ID.name()));
+
+        LOGGER.debug("Record: {}", resultSet.getString(OutboxColumns.ID.name()));
         return new SourceRecord(sourcePartition, sourceOffset, resultSet.getString(OutboxColumns.EVENT_TYPE.name()),
                 null, null, resultSet.getString(OutboxColumns.KEY.name()),
-                null, resultSet.getString(OutboxColumns.DATA.name()), resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime(), headers);
+                null, resultSet.getString(OutboxColumns.DATA.name()),
+                resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime(), headers);
     }
 
     private Headers getHeaders(ResultSet resultSet) throws SQLException {
@@ -40,5 +42,4 @@ enum RowMapper {
         final var lastDate = resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime();
         return Collections.singletonMap(RecordFields.OFFSET, new OffsetRecord(lastDate, lastSCN).serialize());
     }
-
 }

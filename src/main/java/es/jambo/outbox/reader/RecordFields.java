@@ -3,7 +3,7 @@ package es.jambo.outbox.reader;
 final class RecordFields {
 
     private RecordFields() {
-        throw new RuntimeException();
+        throw new IllegalAccessError();
     }
 
     public static final String HEADER_ID = "id";

@@ -3,7 +3,7 @@ package es.jambo.outbox.config;
 public final class PropertiesPollingConig {
 
     private PropertiesPollingConig() {
-        throw new RuntimeException();
+        throw new IllegalAccessError();
     }
 
     public static final String VERSION = "0.0.1";

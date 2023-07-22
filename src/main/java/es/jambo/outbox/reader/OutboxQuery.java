@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 final class OutboxQuery {
@@ -23,12 +24,8 @@ final class OutboxQuery {
                                         where o.create_at >= ?
                                               and o.ora_rowscn > ?               
                                                         """;
-    enum OutboxColumns {
-        ID, CREATE_AT, EVENT_TYPE, KEY, DATA, ORA_ROWSCN;
-    }
 
-
-    public Connection connection;
+    private Connection connection;
 
     public OutboxQuery(Connection connection) {
         this.connection = connection;
@@ -39,6 +36,7 @@ final class OutboxQuery {
 
         PreparedStatement stment = null;
         ResultSet resultSet = null;
+        OffsetRecord offsetNew =  offsetValue;
         try {
             stment = connection.prepareStatement(getOutboxQuery(tableName, offsetValue));
             if (offsetValue != null) {
@@ -49,10 +47,12 @@ final class OutboxQuery {
 
             while (resultSet.next()) {
                 LOGGER.debug("Reading...");
-                list.add(RowMapper.GET.record(tableName, resultSet));
+                list.add(RowMapper.GET.sourceRecord(tableName, resultSet));
+                resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
+                offsetNew = getOffSet(resultSet);
             }
 
-            return offsetValue;
+            return offsetNew;
         } catch (Exception ex) {
             throw new InterruptedException(ex.getMessage());
         } finally {
@@ -74,6 +74,14 @@ final class OutboxQuery {
 
     private String getOutboxQuery(String tableName, OffsetRecord offsetValue) {
         return (offsetValue == null) ? String.format(OUTBOX_INIT, tableName) : String.format(OUTBOX_OFFSET, tableName);
+    }
+
+
+    private OffsetRecord getOffSet(ResultSet resultSet) throws SQLException {
+        final var lastSCN = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
+        final var lastDate = resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime();
+        LOGGER.debug("Offset [ date: {}, scn: {} ]",lastDate,lastSCN);
+        return new OffsetRecord(lastDate, lastSCN);
     }
 
 }
