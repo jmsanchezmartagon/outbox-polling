@@ -1,21 +1,14 @@
 package es.jambo.outbox.reader;
 
-import es.jambo.outbox.CouldNotCloseConnectionException;
-import es.jambo.outbox.CouldNotOpenConnectionException;
 import es.jambo.outbox.config.PropertiesPollingConig;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.apache.kafka.connect.source.SourceTaskContext;
 
-import java.sql.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OutboxReader extends SourceTask {
-    private Connection connection;
+    private OutboxQuery query;
     private String[] listOutbox;
     private Map<String, OffsetRecord> offsetPartition;
 
@@ -33,7 +26,7 @@ public class OutboxReader extends SourceTask {
     @Override
     public void start(Map<String, String> map) {
         listOutbox = getListOutbox(map);
-        connection = getConnection(map);
+        query = createQueryExecutor(map);
         initializeOffsetPartition();
     }
 
@@ -46,24 +39,13 @@ public class OutboxReader extends SourceTask {
         return tables.split(PropertiesPollingConig.OUTBOX_LIST_TOKEN);
     }
 
-    private Connection getConnection(Map<String, String> map) {
-        Connection conn = null;
-        try {
-            final var urlConnection = map.get(PropertiesPollingConig.DATASOURCE_URL);
-            conn = DriverManager.getConnection(urlConnection);
-            try (final var statement = conn.createStatement()) {
-                statement.execute("call DBMS_APPLICATION_INFO.SET_CLIENT_INFO('Outbox')");
-            }
-
-        } catch (SQLException e) {
-            throw new CouldNotOpenConnectionException(e.getMessage(), e);
-        }
-        return conn;
+    private OutboxQuery createQueryExecutor(Map<String, String> map) {
+        return new OutboxQuery(map.get(PropertiesPollingConig.DATASOURCE_URL));
     }
 
     private void initializeOffsetPartition() {
         for (var tableName : listOutbox) {
-            var offsetMap = this.context.offsetStorageReader().offset( Collections.singletonMap(RecordFields.PARTITION, tableName));
+            var offsetMap = this.context.offsetStorageReader().offset(Collections.singletonMap(RecordFields.PARTITION, tableName));
             if (offsetMap != null) {
                 var value = offsetMap.get(RecordFields.OFFSET);
                 if (value instanceof String serializeOffset) {
@@ -76,24 +58,22 @@ public class OutboxReader extends SourceTask {
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        final List<SourceRecord> list = new LinkedList<>();
-        OffsetRecord offsetValue = null;
-        OutboxQuery query  = new OutboxQuery(connection);
+
+        List<SourceRecord> records = new LinkedList<>();
+        QueryResult result = null;
 
         for (var tableName : listOutbox) {
-            offsetValue = query.addRecords(tableName,offsetPartition.get(tableName),list);
-            offsetPartition.put(tableName,offsetValue);
+            result = query.readRecords(tableName, offsetPartition.get(tableName));
+
+            records.addAll(result.records());
+            offsetPartition.put(tableName, result.offset());
         }
-        return list;
+        return records;
     }
 
     @Override
     public void stop() {
-        try {
-            connection.close();
-        } catch (SQLException sqlEx) {
-            throw new CouldNotCloseConnectionException(sqlEx.getMessage(), sqlEx);
-        }
+        query.stop();
     }
 
 }

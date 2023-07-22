@@ -7,12 +7,7 @@ import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OutboxPollingConnector extends SourceConnector {
 
@@ -36,6 +31,7 @@ public class OutboxPollingConnector extends SourceConnector {
 
     @Override
     public void stop() {
+        oraclePollingConfig = null;
     }
 
     @Override
