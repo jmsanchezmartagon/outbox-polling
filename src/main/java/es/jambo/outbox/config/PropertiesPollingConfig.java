@@ -1,8 +1,8 @@
 package es.jambo.outbox.config;
 
-public final class PropertiesPollingConig {
+public final class PropertiesPollingConfig {
 
-    private PropertiesPollingConig() {
+    private PropertiesPollingConfig() {
         throw new IllegalAccessError();
     }
 

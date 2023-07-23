@@ -11,6 +11,8 @@ class OraclePollingConfigTest {
         var expectedConfig = OraclePollingConfig.configPollingDefinition();
 
         Assertions.assertThat(expectedConfig).isNotNull();
-        Assertions.assertThat(expectedConfig.configKeys().keySet()).contains(PropertiesPollingConig.DATASOURCE_URL).contains(PropertiesPollingConig.OUTBOX_TABLE_LIST);
+        Assertions.assertThat(expectedConfig.configKeys().keySet()).contains(PropertiesPollingConfig.DATASOURCE_URL)
+                .contains(PropertiesPollingConfig.OUTBOX_TABLE_LIST)
+                .contains(PropertiesPollingConfig.POOL_INTERVAL_MS);
     }
 }

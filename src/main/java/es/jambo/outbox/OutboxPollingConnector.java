@@ -1,7 +1,7 @@
 package es.jambo.outbox;
 
 import es.jambo.outbox.config.OraclePollingConfig;
-import es.jambo.outbox.config.PropertiesPollingConig;
+import es.jambo.outbox.config.PropertiesPollingConfig;
 import es.jambo.outbox.reader.OutboxReader;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
@@ -21,7 +21,7 @@ public class OutboxPollingConnector extends SourceConnector {
 
     @Override
     public String version() {
-        return PropertiesPollingConig.VERSION;
+        return PropertiesPollingConfig.VERSION;
     }
 
     @Override
@@ -42,18 +42,18 @@ public class OutboxPollingConnector extends SourceConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int tasks) {
-        final var globalOutboxConfig = oraclePollingConfig.getList(PropertiesPollingConig.OUTBOX_TABLE_LIST);
+        final var globalOutboxConfig = oraclePollingConfig.getList(PropertiesPollingConfig.OUTBOX_TABLE_LIST);
         if (globalOutboxConfig.isEmpty())
-            throw new IllegalArgumentException(String.format("%s is empty.", PropertiesPollingConig.OUTBOX_TABLE_LIST));
+            throw new IllegalArgumentException(String.format("%s is empty.", PropertiesPollingConfig.OUTBOX_TABLE_LIST));
 
-        List<String>[] threadsTables = getTablesForTaks(tasks, globalOutboxConfig);
+        List<String>[] threadsTables = getTablesForTasks(tasks, globalOutboxConfig);
 
         return getMapsConfigForTask(threadsTables);
     }
 
-    private List<String>[] getTablesForTaks(int tasks, List<String> globalOutboxConfig) {
+    private List<String>[] getTablesForTasks(int tasks, List<String> globalOutboxConfig) {
 
-        int taskConfigSize = getTaskConfigSize(tasks, globalOutboxConfig);
+        int taskConfigSize = Math.min(tasks, globalOutboxConfig.size());
 
         List<String>[] threadsTables = new List[taskConfigSize];
         var index = 0;
@@ -68,21 +68,11 @@ public class OutboxPollingConnector extends SourceConnector {
     }
 
 
-    private int getTaskConfigSize(int tasks, List<String> globalOutboxConfig) {
-        int globalConfigSize = globalOutboxConfig.size();
-        if (tasks > globalConfigSize)
-            return globalConfigSize;
-        return tasks;
-    }
-
-
     private List<Map<String, String>> getMapsConfigForTask(List<String>[] threadsTables) {
         return Arrays.stream(threadsTables).map(outboxByThread -> {
-            Map<String, String> config = new HashMap<>();
-            config.put(PropertiesPollingConig.DATASOURCE_URL, oraclePollingConfig.getString(PropertiesPollingConig.DATASOURCE_URL));
-            config.put(PropertiesPollingConig.POOL_INTERVAL_MS, String.valueOf(oraclePollingConfig.getInt(PropertiesPollingConig.POOL_INTERVAL_MS)));
-            config.put(PropertiesPollingConig.OUTBOX_TABLE_LIST, outboxByThread.stream()
-                    .reduce((partialString, element) -> String.format("%s%s%s", partialString, PropertiesPollingConig.OUTBOX_LIST_TOKEN, element)).orElse(""));
+            Map<String, String> config = new HashMap<>(oraclePollingConfig.originalsStrings());
+            config.put(PropertiesPollingConfig.OUTBOX_TABLE_LIST, outboxByThread.stream()
+                    .reduce((partialString, element) -> String.format("%s%s%s", partialString, PropertiesPollingConfig.OUTBOX_LIST_TOKEN, element)).orElse(""));
             return Collections.unmodifiableMap(config);
         }).toList();
     }

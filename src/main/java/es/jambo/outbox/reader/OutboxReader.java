@@ -1,6 +1,7 @@
 package es.jambo.outbox.reader;
 
-import es.jambo.outbox.config.PropertiesPollingConig;
+import es.jambo.outbox.config.OraclePollingConfig;
+import es.jambo.outbox.config.PropertiesPollingConfig;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.apache.kafka.connect.source.SourceTaskContext;
@@ -13,11 +14,10 @@ public class OutboxReader extends SourceTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxReader.class);
     private OutboxQuery query;
-    private String[] listOutbox;
+    private List<String> listOutbox;
     private Map<String, OffsetRecord> offsetPartition;
-    private int interval;
-    private long poolIntervalTime = System.currentTimeMillis();
-
+    private int intervalSize;
+    private long nextInterval = System.currentTimeMillis();
 
     @Override
     public void initialize(SourceTaskContext context) {
@@ -27,28 +27,16 @@ public class OutboxReader extends SourceTask {
 
     @Override
     public String version() {
-        return PropertiesPollingConig.VERSION;
+        return PropertiesPollingConfig.VERSION;
     }
 
     @Override
     public void start(Map<String, String> map) {
-        listOutbox = getListOutbox(map);
-        query = createQueryExecutor(map);
+        var oraclePollingConfig = new OraclePollingConfig(map);
+        intervalSize = oraclePollingConfig.getInt(PropertiesPollingConfig.POOL_INTERVAL_MS);
+        listOutbox = oraclePollingConfig.getList(PropertiesPollingConfig.OUTBOX_TABLE_LIST);
+        query = new OutboxQuery(oraclePollingConfig.getString(PropertiesPollingConfig.DATASOURCE_URL));
         initializeOffsetPartition();
-        initializeInterval(map);
-    }
-
-
-    private String[] getListOutbox(Map<String, String> map) {
-        String tables = map.get(PropertiesPollingConig.OUTBOX_TABLE_LIST);
-        if (tables == null || tables.isBlank()) {
-            throw new IllegalArgumentException();
-        }
-        return tables.split(PropertiesPollingConig.OUTBOX_LIST_TOKEN);
-    }
-
-    private OutboxQuery createQueryExecutor(Map<String, String> map) {
-        return new OutboxQuery(map.get(PropertiesPollingConig.DATASOURCE_URL));
     }
 
     private void initializeOffsetPartition() {
@@ -63,32 +51,23 @@ public class OutboxReader extends SourceTask {
         }
     }
 
-    private void initializeInterval(Map<String, String> properties) {
-        try {
-            interval = Integer.parseInt(properties.get(PropertiesPollingConig.POOL_INTERVAL_MS));
-        } catch (Throwable th) {
-            LOGGER.error(th.getMessage(), th);
-            interval = 500;
-        }
-    }
-
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
 
-        if (poolIntervalTime < System.currentTimeMillis()) {
+        if (nextInterval < System.currentTimeMillis()) {
             LOGGER.info("Offsets {} ", offsetPartition);
             List<SourceRecord> records = new LinkedList<>();
-            QueryResult result = null;
+
             for (var tableName : listOutbox) {
-                result = query.readRecords(tableName, offsetPartition.get(tableName));
+                var result = query.readRecords(tableName, offsetPartition.get(tableName));
 
                 records.addAll(result.records());
                 offsetPartition.put(tableName, result.offset());
             }
 
             LOGGER.info("Pool {} ", records.size());
-            poolIntervalTime = System.currentTimeMillis() + interval;
+            nextInterval = System.currentTimeMillis() + intervalSize;
 
             return records;
         }

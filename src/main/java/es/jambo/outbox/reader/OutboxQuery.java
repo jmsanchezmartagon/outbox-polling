@@ -39,7 +39,7 @@ final class OutboxQuery {
             order by create_at ASC, ora_rowscn ASC
                             """;
 
-    private Connection connection;
+    private final Connection connection;
 
     public OutboxQuery(String urlConnection) {
         this.connection = createConnection(urlConnection);
@@ -47,17 +47,15 @@ final class OutboxQuery {
 
 
     private Connection createConnection(final String urlConnection) {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(urlConnection);
+            var conn = DriverManager.getConnection(urlConnection);
             try (final var statement = conn.createStatement()) {
                 statement.execute("call DBMS_APPLICATION_INFO.SET_CLIENT_INFO('Outbox')");
             }
-
+            return conn;
         } catch (SQLException e) {
             throw new CouldNotOpenConnectionException(e.getMessage(), e);
         }
-        return conn;
     }
 
     public QueryResult readRecords(String tableName, OffsetRecord offsetValue) throws InterruptedException {
