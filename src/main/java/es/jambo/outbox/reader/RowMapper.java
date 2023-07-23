@@ -40,7 +40,6 @@ enum RowMapper {
 
     private Map<String, String> getOffSet(ResultSet resultSet) throws SQLException {
         final var lastSCN = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
-        final var lastDate = resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime();
-        return Collections.singletonMap(RecordFields.OFFSET, new OffsetRecord(lastDate, lastSCN).serialize());
+        return Collections.singletonMap(RecordFields.OFFSET, lastSCN);
     }
 }

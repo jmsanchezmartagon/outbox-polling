@@ -4,5 +4,5 @@ import org.apache.kafka.connect.source.SourceRecord;
 
 import java.util.List;
 
-record QueryResult(List<SourceRecord> records, OffsetRecord offset) {
+record QueryResult(List<SourceRecord> records, String offset) {
 }

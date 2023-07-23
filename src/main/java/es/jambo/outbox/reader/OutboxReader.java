@@ -15,7 +15,7 @@ public class OutboxReader extends SourceTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxReader.class);
     private OutboxQuery query;
     private List<String> listOutbox;
-    private Map<String, OffsetRecord> offsetPartition;
+    private Map<String, String> offsetPartition;
     private int intervalSize;
     private long nextInterval = System.currentTimeMillis();
 
@@ -44,8 +44,8 @@ public class OutboxReader extends SourceTask {
             var offsetMap = this.context.offsetStorageReader().offset(Collections.singletonMap(RecordFields.PARTITION, tableName));
             if (offsetMap != null) {
                 var value = offsetMap.get(RecordFields.OFFSET);
-                if (value instanceof String serializeOffset) {
-                    offsetPartition.put(tableName, OffsetRecord.deserialize(serializeOffset));
+                if (value instanceof String offsetValue) {
+                    offsetPartition.put(tableName, offsetValue);
                 }
             }
         }

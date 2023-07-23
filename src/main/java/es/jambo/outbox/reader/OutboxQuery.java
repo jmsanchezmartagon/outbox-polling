@@ -31,8 +31,7 @@ final class OutboxQuery {
             where o.ora_rowscn IN (
                               select  o.ora_rowscn
                               from outbox o
-                              where o.create_at >= ?
-                                    and o.ora_rowscn > ?
+                              where o.ora_rowscn > ?
                               order by create_at ASC, ora_rowscn ASC
                               fetch first 5000 rows only
                               )
@@ -58,26 +57,23 @@ final class OutboxQuery {
         }
     }
 
-    public QueryResult readRecords(String tableName, OffsetRecord offsetValue) throws InterruptedException {
+    public QueryResult readRecords(String tableName, String offsetValue) throws InterruptedException {
 
         LOGGER.debug("Reading...");
         List<SourceRecord> list = new LinkedList<>();
         PreparedStatement stment = null;
         ResultSet resultSet = null;
-        OffsetRecord offsetNew = offsetValue;
+        var offsetNew = offsetValue;
         try {
             stment = connection.prepareStatement(getOutboxQuery(tableName, offsetValue));
             if (offsetValue != null) {
-                stment.setDate(1, new java.sql.Date(offsetValue.date()));
-                stment.setString(2, offsetValue.scn());
+                stment.setString(2, offsetValue);
             }
             resultSet = stment.executeQuery();
 
             while (resultSet.next()) {
-                LOGGER.debug("Record {}", resultSet.getRowId(1));
                 list.add(RowMapper.GET.sourceRecord(tableName, resultSet));
-                resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
-                offsetNew = getOffSet(resultSet);
+                offsetNew = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
             }
 
             return new QueryResult(list, offsetNew);
@@ -100,19 +96,11 @@ final class OutboxQuery {
 
     }
 
-    private String getOutboxQuery(String tableName, OffsetRecord offsetValue) {
+    private String getOutboxQuery(String tableName, String offsetValue) {
         final var query = (offsetValue == null) ? String.format(OUTBOX_INIT, tableName) : String.format(OUTBOX_OFFSET, tableName);
         LOGGER.debug("Query: {}", query);
         LOGGER.debug("Offset: {}", offsetValue);
         return query;
-    }
-
-
-    private OffsetRecord getOffSet(ResultSet resultSet) throws SQLException {
-        final var lastSCN = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
-        final var lastDate = resultSet.getDate(OutboxColumns.CREATE_AT.name()).getTime();
-        LOGGER.debug("Offset [ date: {}, scn: {} ]", lastDate, lastSCN);
-        return new OffsetRecord(lastDate, lastSCN);
     }
 
 
