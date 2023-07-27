@@ -1,13 +1,13 @@
 package es.jambo.outbox;
 
 import es.jambo.outbox.config.PropertiesPollingConfig;
+import es.jambo.outbox.reader.OutboxReader;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
 class OutboxPollingConnectorTest {
-
 
     @Test
     void should_getOneConfig_when_outboxListIsOne() {
@@ -46,7 +46,7 @@ class OutboxPollingConnectorTest {
 
         // then
         Assertions.assertThat(resultConfig).isNotEmpty().size().isEqualTo(1);
-        Assertions.assertThat(resultConfig.get(0).get(PropertiesPollingConfig.OUTBOX_TABLE_LIST)).isEqualTo(outboxTables);
+        Assertions.assertThat(resultConfig.get(0)).containsEntry(PropertiesPollingConfig.OUTBOX_TABLE_LIST, outboxTables);
     }
 
 
@@ -90,10 +90,10 @@ class OutboxPollingConnectorTest {
 
         // then
         Assertions.assertThat(resultConfig).isNotEmpty().size().isEqualTo(2);
-        Assertions.assertThat(resultConfig.get(0).get(PropertiesPollingConfig.OUTBOX_TABLE_LIST)).isEqualTo(String.format("1%s3", PropertiesPollingConfig.OUTBOX_LIST_TOKEN));
-        Assertions.assertThat(resultConfig.get(0).get(PropertiesPollingConfig.POOL_INTERVAL_MS)).isEqualTo(POOL_INTERVAL);
-        Assertions.assertThat(resultConfig.get(1).get(PropertiesPollingConfig.OUTBOX_TABLE_LIST)).isEqualTo(String.format("2%s4", PropertiesPollingConfig.OUTBOX_LIST_TOKEN));
-        Assertions.assertThat(resultConfig.get(1).get(PropertiesPollingConfig.POOL_INTERVAL_MS)).isEqualTo(POOL_INTERVAL);
+        Assertions.assertThat(resultConfig.get(0)).containsEntry(PropertiesPollingConfig.OUTBOX_TABLE_LIST, String.format("1%s3", PropertiesPollingConfig.OUTBOX_LIST_TOKEN));
+        Assertions.assertThat(resultConfig.get(0)).containsEntry(PropertiesPollingConfig.POOL_INTERVAL_MS, POOL_INTERVAL);
+        Assertions.assertThat(resultConfig.get(1)).containsEntry(PropertiesPollingConfig.OUTBOX_TABLE_LIST, String.format("2%s4", PropertiesPollingConfig.OUTBOX_LIST_TOKEN));
+        Assertions.assertThat(resultConfig.get(1)).containsEntry(PropertiesPollingConfig.POOL_INTERVAL_MS, POOL_INTERVAL);
     }
 
     @Test
@@ -125,6 +125,17 @@ class OutboxPollingConnectorTest {
         final var config = new OutboxPollingConnector().config();
 
         Assertions.assertThat(config).isNotNull();
+    }
 
+    @Test
+    void should_beEqualsPropertiesPollingConfigVersion_when_getVersion() {
+        final var version = new OutboxPollingConnector().version();
+        Assertions.assertThat(version).isEqualTo(PropertiesPollingConfig.VERSION);
+    }
+
+    @Test
+    void should_beOutReaderTask_when_getTaskClas() {
+        final var classTask = new OutboxPollingConnector().taskClass();
+        Assertions.assertThat(classTask).isEqualTo(OutboxReader.class);
     }
 }
