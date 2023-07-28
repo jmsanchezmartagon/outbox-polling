@@ -13,12 +13,13 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <kafka-connect-api>3.5.1</kafka-connect-api>
-        <oracle-jdbc>21.7.0.0</oracle-jdbc>
+        <kafka-connect-api.version>3.5.1</kafka-connect-api.version>
+        <oracle-jdbc.version>21.7.0.0</oracle-jdbc.version>
 
-        <junit.version>5.4.0</junit.version>
+        <junit.version>5.8.1</junit.version>
         <assertj.version>3.22.0</assertj.version>
         <mockito.version>5.4.0</mockito.version>
+        <testcontainers.version>1.18.3</testcontainers.version>
 
 
     </properties>
@@ -27,14 +28,14 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
-            <version>${kafka-connect-api}</version>
+            <version>${kafka-connect-api.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
-            <version>${oracle-jdbc}</version>
+            <version>${oracle-jdbc.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -59,6 +60,24 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>oracle-xe</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

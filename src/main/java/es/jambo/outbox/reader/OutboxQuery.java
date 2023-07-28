@@ -67,7 +67,7 @@ final class OutboxQuery {
         try {
             stment = connection.prepareStatement(getOutboxQuery(tableName, offsetValue));
             if (offsetValue != null) {
-                stment.setString(2, offsetValue);
+                stment.setString(1, offsetValue);
             }
             resultSet = stment.executeQuery();
 
