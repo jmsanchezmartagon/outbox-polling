@@ -1,7 +1,7 @@
 alter session set "_oracle_script"=true;
 
 CREATE TABLESPACE JAMBO DATAFILE
-  '/opt/oracle/oradata/ORCLCDB/JAMBO_001.dbf' SIZE 50M AUTOEXTEND OFF
+  '/opt/oracle/oradata/XE/JAMBO_001.dbf' SIZE 50M AUTOEXTEND OFF
 LOGGING
 ONLINE
 PERMANENT

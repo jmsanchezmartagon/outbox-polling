@@ -1,5 +1,6 @@
 package es.jambo.outbox.reader;
 
+import es.jambo.outbox.CouldNotOpenConnectionException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,15 +22,12 @@ class OutboxQueryTest {
     private final String database = "OBX";
     private final String user = "JAMBO";
     private final String passwd = "JAMBO";
-
-
+    private String jdbcURL = null;
     @Container
     private OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:21-slim-faststart")
             .withDatabaseName(database)
             .withUsername(user)
             .withPassword(passwd);
-
-    private String jdbcURL = null;
 
     @BeforeEach
     public void initDatabase() throws SQLException, FileNotFoundException {
@@ -37,7 +35,7 @@ class OutboxQueryTest {
             jdbcURL = oracle.getJdbcUrl().replace("@", String.format("%s/%s@", user, passwd));
             var conn = DriverManager.getConnection(jdbcURL);
 
-            Scanner scan = new Scanner(new File("database/create_table.sql")).useDelimiter(";");
+            Scanner scan = new Scanner(new File("database/02_create_table.sql")).useDelimiter(";");
             while (scan.hasNext()) {
                 var st = conn.createStatement();
                 st.execute(scan.next());
@@ -52,6 +50,13 @@ class OutboxQueryTest {
             }
             conn.close();
         }
+    }
+
+    @Test
+    void should_throwException_when_jdbcURLIsNotValid() {
+        Assertions.assertThatThrownBy(() -> {
+            new OutboxQuery("");
+        }).isInstanceOf(CouldNotOpenConnectionException.class);
     }
 
     @Test

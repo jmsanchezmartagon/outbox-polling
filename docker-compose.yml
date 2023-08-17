@@ -1,13 +1,17 @@
 version: "3"
 services:
   ddbb:
-    image: jmsanchez/oracle-21-ee-outbox
+    image: gvenzl/oracle-xe:21-slim-faststart
     expose:
       - 1521
     ports:
       - "1521:1521"
+    environment:
+      ORACLE_RANDOM_PASSWORD: "true"
+    volumes:
+      - ./database:/container-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD", "tnsping localhost" ]
+      test: [ "CMD", "healthcheck.sh" ]
       interval: 2s
   zookeeper:
     build: .
@@ -34,5 +38,5 @@ services:
       - ./target:/opt/connect
       - ./config:/opt/connect/config
     depends_on:
-      - kafka
       - ddbb
+      - kafka
