@@ -22,7 +22,7 @@ services:
       - "2181:2181"
   kafka:
     build: .
-    entrypoint: ./bin/kafka-server-start.sh ./config/server.properties
+    entrypoint: ./bin/kafka-server-start.sh ./config/server.properties  --override listeners=PLAINTEXT://kafka:9092 --override advertised.listeners=PLAINTEXT://kafka:9092
     expose:
       - 9092
     ports:

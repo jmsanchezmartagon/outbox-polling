@@ -31,7 +31,7 @@ enum RowMapper {
     }
 
     private Headers getHeaders(ResultSet resultSet) throws SQLException {
-        return new ConnectHeaders().addString(RecordFields.HEADER_ID, resultSet.getString(OutboxColumns.ID.name()));
+        return new ConnectHeaders().addString(RecordFields.HEADER_ID, resultSet.getString(OutboxColumns.EVENT_ID.name()));
     }
 
     private Map<String, ?> getSource(String partitionId) {
@@ -39,7 +39,7 @@ enum RowMapper {
     }
 
     private Map<String, String> getOffSet(ResultSet resultSet) throws SQLException {
-        final var lastSCN = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
-        return Collections.singletonMap(RecordFields.OFFSET, lastSCN);
+        final var rowId = resultSet.getString(OutboxColumns.ID.name());
+        return Collections.singletonMap(RecordFields.OFFSET, rowId);
     }
 }

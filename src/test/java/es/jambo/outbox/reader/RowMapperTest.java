@@ -22,14 +22,14 @@ class RowMapperTest {
     @Test
     void should_getSourceRecord_when_mapResultSet() throws SQLException {
         final var partitionId = UUID.randomUUID().toString();
-        final var lastSCN = UUID.randomUUID().toString();
+        final var lastRow = UUID.randomUUID().toString();
         final var id = UUID.randomUUID().toString();
         final var key = UUID.randomUUID().toString();
         final var type = UUID.randomUUID().toString();
         final var data = "{}";
 
-        BDDMockito.when(resultSet.getString(OutboxColumns.ORA_ROWSCN.name())).thenReturn(lastSCN);
-        BDDMockito.when(resultSet.getString(OutboxColumns.ID.name())).thenReturn(id);
+        BDDMockito.when(resultSet.getString(OutboxColumns.ID.name())).thenReturn(lastRow);
+        BDDMockito.when(resultSet.getString(OutboxColumns.EVENT_ID.name())).thenReturn(id);
         BDDMockito.when(resultSet.getString(OutboxColumns.EVENT_TYPE.name())).thenReturn(type);
         BDDMockito.when(resultSet.getString(OutboxColumns.KEY.name())).thenReturn(key);
         BDDMockito.when(resultSet.getString(OutboxColumns.DATA.name())).thenReturn(data);
@@ -46,7 +46,7 @@ class RowMapperTest {
         );
 
         Assertions.assertThat(record.sourcePartition()).isEqualTo(Collections.singletonMap(RecordFields.PARTITION, partitionId));
-        Assertions.assertThat(record.sourceOffset()).isEqualTo(Collections.singletonMap(RecordFields.OFFSET, lastSCN));
+        Assertions.assertThat(record.sourceOffset()).isEqualTo(Collections.singletonMap(RecordFields.OFFSET, lastRow));
     }
 
 }

@@ -14,28 +14,12 @@ final class OutboxQuery {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxQuery.class);
-    private static final String OUTBOX_INIT = """
-            select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
-            from %s o
-            where o.ora_rowscn IN (
-                              select  o.ora_rowscn
-                              from outbox o
-                              order by create_at ASC, ora_rowscn ASC
-                              fetch first 5000 rows only
-                              )
-            order by create_at ASC, ora_rowscn ASC
-            """;
     private static final String OUTBOX_OFFSET = """
-            select o.id, o.event_type, o.create_at, o.key, o.data, o.ora_rowscn
+            select o.id, o.event_id, o.event_type, o.create_at, o.key, o.data
             from %s o
-            where o.ora_rowscn IN (
-                              select  o.ora_rowscn
-                              from outbox o
-                              where o.ora_rowscn > ?
-                              order by create_at ASC, ora_rowscn ASC
-                              fetch first 5000 rows only
-                              )
-            order by create_at ASC, ora_rowscn ASC
+            where o.ID > ?
+            order by o.id ASC
+            fetch first 5000 rows only
                             """;
 
     private final Connection connection;
@@ -65,15 +49,19 @@ final class OutboxQuery {
         ResultSet resultSet = null;
         var offsetNew = offsetValue;
         try {
-            stment = connection.prepareStatement(getOutboxQuery(tableName, offsetValue));
+            stment = connection.prepareStatement(getOutboxQuery(tableName));
             if (offsetValue != null) {
+                LOGGER.debug("Offset: {}", offsetValue);
                 stment.setString(1, offsetValue);
+            } else {
+                LOGGER.debug("Offset: None, set min value");
+                stment.setInt(1, Integer.MIN_VALUE);
             }
             resultSet = stment.executeQuery();
 
             while (resultSet.next()) {
                 list.add(RowMapper.GET.sourceRecord(tableName, resultSet));
-                offsetNew = resultSet.getString(OutboxColumns.ORA_ROWSCN.name());
+                offsetNew = resultSet.getString(OutboxColumns.ID.name());
             }
 
             return new QueryResult(list, offsetNew);
@@ -96,10 +84,9 @@ final class OutboxQuery {
 
     }
 
-    private String getOutboxQuery(String tableName, String offsetValue) {
-        final var query = (offsetValue == null) ? String.format(OUTBOX_INIT, tableName) : String.format(OUTBOX_OFFSET, tableName);
+    private String getOutboxQuery(String tableName) {
+        final var query = String.format(OUTBOX_OFFSET, tableName);
         LOGGER.debug("Query: {}", query);
-        LOGGER.debug("Offset: {}", offsetValue);
         return query;
     }
 
