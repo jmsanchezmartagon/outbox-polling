@@ -1,7 +1,9 @@
-# Outbox-Polling
+# JAMBO Outbox-Polling
 
 A Source Kafka Connector to help to implement Transactional Ouxtbox Pattern that lets us disaggregate application
 transactions of sending messages and Polling Events is responsible to pull messages into the bus.
+
+![jambo.jpeg](doc%2Fjambo.jpeg)
 
 ## How implement a Kafka Connect ?
 
