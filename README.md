@@ -3,17 +3,18 @@
 A Source Kafka Connector that implements Polling Events Pattern which is responsible to pull messages into the bus and
 help to implement Transactional Ouxtbox Pattern which lets us disaggregate events production of events sending.
 
+![jambo.jpeg](doc%2Fjambo.jpeg)
+
 This repository contains the source code of connector, docker files to deploy and to test and design
 documents.
-
-![jambo.jpeg](doc%2Fjambo.jpeg)
 
 # JAMBO Architecture
 
 Ensure transactional messaging is an important characteristic in Microservice Architecture. This solution uses a
-different mechanism to publish messages which uses a database table as message queue and a connector to send it. As we
-can see in the diagram, the producer (microservice 1) creates an event and is persisted in the outbox table ensuring
-transactional operation on the microservice, if the operation crashed, generated events would never be sent.
+different mechanism to publish messages which uses a database table as message queue and a connector to send it.
+
+As we can see in the diagram, the producer (microservice 1) creates an event and is persisted in the outbox table
+ensuring transactional operation on the microservice, if the operation crashed, generated events would never be sent.
 
 ![Architecture.png](doc%2FArchitecture.png)
 
