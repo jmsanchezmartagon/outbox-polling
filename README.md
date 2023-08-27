@@ -61,6 +61,50 @@ Run:
   you will not have problems. The docker-compose file has dependency_on and healthy but is not working with Docker
   20.10.21.
 
+## How works?
+
+### Initialization
+
+Firstly, the connector checks configuration parameters and after that prepares task configuration, so configuration
+properties is divided by task number with one restriction: One outbox table only can be polled by one task but one task
+can be polled one or more tables. The number of task must be accord with the nodes number of Kafka Connect cluster.
+Kafka connect uses the same concept of topic partition to store all information of the task process events, Jambo uses
+table name as key for partition offset.
+
+### Fist Run
+
+When connector start at the first time offset will not exist, get the first 5000 (will be configurable for next
+version), the Id of the last processed row will be set as offset. Each row has two header, one of them is partition key
+and the other is event id.
+
+### Next Runs
+
+The most important difference between first run and next runs it that connector after first time, recovers offset
+configuration and get rows with Id > offset by this table.
+
+### Limits
+
+* Nowadays, the connector only works with an only jdbc url.
+
+### Configuration properties
+
+#### Connect Properties
+
+| Properties            | Descriptions                                         |
+|-----------------------|------------------------------------------------------|
+| name                  | Connector Name                                       |
+| connector.class       | Connector Class                                      |
+| tasks.max             | Task number, must be accord with Kafka Connect nodes |
+| offsets.storage.topic | Topic where offsets are stored                       |
+
+#### Jambo Properties
+
+| Properties        | Descriptions                           |
+|-------------------|----------------------------------------|
+| poll.interval.ms  | Time in milliseconds between one polls |
+| datasource.url    | URL connection                         |
+| outbox.table.list | Outbox tables comma separated list     |
+
 # More Info
 
 ## About Outbox and Polling Pattern
