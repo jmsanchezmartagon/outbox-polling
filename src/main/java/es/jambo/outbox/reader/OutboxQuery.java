@@ -19,7 +19,7 @@ final class OutboxQuery {
             from %s o
             where o.ID > ?
             order by o.id ASC
-            fetch first 5000 rows only
+            fetch first 10000 rows only
                             """;
 
     private final Connection connection;

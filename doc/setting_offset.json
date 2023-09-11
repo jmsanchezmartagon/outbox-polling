@@ -1,0 +1,12 @@
+{
+  "oracle-jambo-connector": [
+    {
+      "partition": {
+        "source.partition": "JAMBO.OUTBOX"
+      },
+      "offset": {
+        "source.offset": "0"
+      }
+    }
+  ]
+}
