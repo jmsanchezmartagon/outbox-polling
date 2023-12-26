@@ -66,6 +66,7 @@ final class OutboxQuery {
 
             return new QueryResult(list, offsetNew);
         } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
             throw new InterruptedException(ex.getMessage());
         } finally {
             try {
