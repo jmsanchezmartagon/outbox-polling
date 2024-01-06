@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 final class OutboxQuery {
 
 

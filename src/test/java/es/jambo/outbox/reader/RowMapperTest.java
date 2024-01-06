@@ -12,7 +12,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.UUID;
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 @ExtendWith(MockitoExtension.class)
 class RowMapperTest {
 

@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 public class OutboxReader extends SourceTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxReader.class);

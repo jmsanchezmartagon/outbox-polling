@@ -15,7 +15,9 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 @Testcontainers
 class OutboxQueryTest {
 

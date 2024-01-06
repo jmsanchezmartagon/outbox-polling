@@ -1,5 +1,8 @@
 package es.jambo.outbox.config;
 
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 public final class PropertiesPollingConfig {
 
     private PropertiesPollingConfig() {

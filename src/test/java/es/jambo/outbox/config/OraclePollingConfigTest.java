@@ -3,7 +3,9 @@ package es.jambo.outbox.config;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 class OraclePollingConfigTest {
 
     @Test

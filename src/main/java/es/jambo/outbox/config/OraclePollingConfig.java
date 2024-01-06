@@ -5,6 +5,9 @@ import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Map;
 
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 public final class OraclePollingConfig extends AbstractConfig {
 
     private static ConfigDef configDef;

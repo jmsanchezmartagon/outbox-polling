@@ -8,7 +8,9 @@ import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
 
 import java.util.*;
-
+/**
+ * @author Juan Manuel Sánchez Martagón <jmsanchezmartagon@gmail.com>
+ */
 public class OutboxPollingConnector extends SourceConnector {
 
     private OraclePollingConfig oraclePollingConfig;
