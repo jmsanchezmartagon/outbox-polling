@@ -21,7 +21,6 @@ final class OutboxQuery {
             from %s o
             where o.ora_rowscn > ?
             order by o.ora_rowscn ASC,o.id ASC
-            fetch first 10000 rows only
                             """;
 
     private final Connection connection;
@@ -60,7 +59,7 @@ final class OutboxQuery {
                 stment.setInt(1, Integer.MIN_VALUE);
             }
             resultSet = stment.executeQuery();
-
+            resultSet.setFetchSize(100);
             while (resultSet.next()) {
                 list.add(RowMapper.GET.sourceRecord(tableName, resultSet));
                 offsetNew = resultSet.getString(OutboxColumns.OFFSET_ID.name());
