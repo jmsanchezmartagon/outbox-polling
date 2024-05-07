@@ -30,7 +30,7 @@ class RowMapperTest {
         final var type = UUID.randomUUID().toString();
         final var data = "{}";
 
-        BDDMockito.when(resultSet.getString(OutboxColumns.ID.name())).thenReturn(lastRow);
+        BDDMockito.when(resultSet.getString(OutboxColumns.OFFSET_ID.name())).thenReturn(lastRow);
         BDDMockito.when(resultSet.getString(OutboxColumns.EVENT_ID.name())).thenReturn(id);
         BDDMockito.when(resultSet.getString(OutboxColumns.EVENT_TYPE.name())).thenReturn(type);
         BDDMockito.when(resultSet.getString(OutboxColumns.KEY.name())).thenReturn(key);

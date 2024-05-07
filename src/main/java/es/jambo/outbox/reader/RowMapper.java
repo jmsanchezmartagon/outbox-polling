@@ -41,7 +41,7 @@ enum RowMapper {
     }
 
     private Map<String, String> getOffSet(ResultSet resultSet) throws SQLException {
-        final var rowId = resultSet.getString(OutboxColumns.ID.name());
+        final var rowId = resultSet.getString(OutboxColumns.OFFSET_ID.name());
         return Collections.singletonMap(RecordFields.OFFSET, rowId);
     }
 }

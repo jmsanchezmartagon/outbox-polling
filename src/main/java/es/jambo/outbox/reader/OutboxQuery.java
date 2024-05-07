@@ -17,10 +17,10 @@ final class OutboxQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxQuery.class);
     private static final String OUTBOX_OFFSET = """
-            select o.id, o.event_id, o.event_type, o.create_at, o.key, o.data
+            select o.ora_rowscn offset_id, o.event_id, o.event_type, o.create_at, o.key, o.data
             from %s o
-            where o.ID > ?
-            order by o.id ASC
+            where o.ora_rowscn > ?
+            order by o.ora_rowscn ASC,o.id ASC
             fetch first 10000 rows only
                             """;
 
@@ -63,7 +63,7 @@ final class OutboxQuery {
 
             while (resultSet.next()) {
                 list.add(RowMapper.GET.sourceRecord(tableName, resultSet));
-                offsetNew = resultSet.getString(OutboxColumns.ID.name());
+                offsetNew = resultSet.getString(OutboxColumns.OFFSET_ID.name());
             }
 
             return new QueryResult(list, offsetNew);
